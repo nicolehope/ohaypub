@@ -1,0 +1,36 @@
+# Grab temporary password for 5.7, write .my.cnf
+
+- name: Remove anonymous user ({{ ansible_hostname }})
+  mysql_user: name='' host="{{ ansible_hostname}}" state=absent
+
+- name: Remove anonymous user (localhost)
+  mysql_user: name='' state=absent
+
+- name: Remove test database
+  mysql_db: db=test state=absent
+
+- name: Set root mysql password (local)
+  mysql_user: name=root
+              password={{ mysql_root_password }}
+              host={{ hosts }}
+  with_items:
+    - 127.0.0.1
+    - ::1
+    - localhost
+  loop_control:
+    loop_var: hosts
+
+- name: /root/.my.cnf
+  template: src=client.j2 dest=/root/.my.cnf
+
+# This will fail twice if skip-name-resolve is enabled. Also, catch short vs fqdn
+- name: Set root mysql password ({{ ansible_hostname }})
+  mysql_user: name=root
+              password={{ mysql_root_password }}
+              host={{ hosts }}
+  with_items:
+    - "{{ ansible_hostname }}"
+    - "{{ ansible_nodename }}"
+  loop_control:
+    loop_var: hosts
+  ignore_errors: yes

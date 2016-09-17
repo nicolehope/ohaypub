@@ -1,0 +1,14 @@
+- hosts: all
+  become: true
+  become_user: "{{ wp_user }}"
+
+  tasks:
+    - name: Update composer.json
+      copy: src=composer/{{ item }}.json dest=/var/www/{{ item }}/composer.json
+            owner={{ wp_user }} group={{ wp_group }}
+      with_items: "{{ wp_sites }}"
+
+    - name: Composer update
+      command: /usr/local/bin/composer update
+               chdir=/var/www/{{ item }}
+      with_items: "{{ wp_sites }}"

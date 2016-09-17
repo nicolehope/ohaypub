@@ -1,0 +1,28 @@
+- name: install percona-release
+  yum: name="https://www.percona.com/downloads/percona-release/redhat/0.1-3/percona-release-0.1-3.noarch.rpm" state=present
+
+- name: install percona
+  yum: name={{ item }} state=present
+  with_items:
+    - Percona-Server-server-{{ percona_version }}
+    - Percona-Server-client-{{ percona_version }}
+    - MySQL-python
+
+- name: enable/start percona
+  service: name=mysqld enabled=true state=started
+#TODO: override open files limit (systemd override)
+
+- name: Check for .my.cnf
+  stat: path=/root/.my.cnf
+  register: my_client
+
+- include: mysql-secure.yml
+  when: my_client.stat.exists == False
+
+- name: /etc/my.cnf
+  copy: src=files/my.cnf dest=/etc/my.cnf
+  register: my_server
+
+- name: Restart mysqld
+  service: name=mysqld state=restarted
+  when: my_server.changed

@@ -1,0 +1,16 @@
+{
+  "repositories": [
+    {
+      "type": "composer",
+      "url": "https://wpackagist.org"
+    }
+  ],
+  "require": {
+    "johnpbloch/wordpress": "*",
+    "wpackagist-plugin/comet-cache": "*",
+    "wpackagist-theme/twentysixteen": "*"
+  },
+  "extra": {
+    "wordpress-install-dir": "wp"
+  }
+}

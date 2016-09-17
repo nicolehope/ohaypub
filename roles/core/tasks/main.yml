@@ -1,0 +1,26 @@
+- name: EPEL repo
+  yum: name=epel-release state=present
+
+- name: Standard packages
+  yum: name={{ item }} state=present
+  with_items:
+    - wget
+    - rsync
+    - openssh-clients
+    - xmlstarlet
+    - ansible
+    - git
+    - pwgen
+
+- name: Disable root SSH logins
+  lineinfile: dest=/etc/ssh/sshd_config state=present
+              insertafter="#PermitRootLogin"
+              line="PermitRootLogin no"
+  notify: restart sshd
+
+
+- name: Enable services
+  service: name={{ item }} state=started enabled=yes
+  with_items:
+    - firewalld
+    - sshd

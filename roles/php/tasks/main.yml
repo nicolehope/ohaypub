@@ -1,0 +1,45 @@
+- name: Install epel-release
+  yum: name=epel-release state=present
+
+- name: Install ius-release
+  yum: name="https://centos7.iuscommunity.org/ius-release.rpm" state=present
+
+- name: Install yum-plugin-replace
+  yum: name=yum-plugin-replace state=present
+
+- name: Install PHP
+  yum: name={{ item }} state=present
+  with_items:
+    - php{{ php_version }}-fpm
+    - php{{ php_version }}-cli
+    - php{{ php_version }}-mysqlnd
+    - php{{ php_version }}-pecl-apcu
+    - php{{ php_version }}-mbstring
+
+#TODO: php-fpm pool configuration
+
+- name: Enable php-fpm
+  service: name=php-fpm state=started enabled=yes
+
+- name: php-fpm nginx
+  copy: src=files/php-fpm.conf dest=/etc/nginx/conf.d/php-fpm.conf
+  notify: restart nginx
+
+- name: Install source control utilities
+  yum: name={{ item }} state=present
+  with_items:
+    - git
+    - svn
+
+- name: Check if composer is installed
+  stat: path=/usr/local/bin/composer
+  register: composer_bin
+
+- block:
+    - name: Fetch composer installer
+      get_url: url=https://getcomposer.org/installer
+               dest=/tmp/composer-setup.php
+
+    - name: Install composer
+      command: php /tmp/composer-setup.php -- --install-dir="/usr/local/bin" --filename="composer"
+  when: composer_bin.stat.exists == False

@@ -1,0 +1,4 @@
+server {
+    server_name {{ item.key }};
+    return 301 $scheme://{{ item.value }}$request_uri;
+}

@@ -1,0 +1,18 @@
+- hosts: all
+  become: true
+
+  tasks:
+    - name: selinux
+      selinux: state=disabled
+
+  roles:
+    - { role: core, tags: 'core' }
+
+- hosts: wordpress
+  become: true
+
+  roles:
+    - { role: nginx, tags: 'nginx' }
+    - { role: percona, tags: 'percona' }
+    - { role: php, tags: 'php' }
+    - { role: wordpress, tags: 'wp' }

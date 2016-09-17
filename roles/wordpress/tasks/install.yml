@@ -1,0 +1,88 @@
+- name: Generate wp-config.php
+  command: >
+    /usr/local/bin/wp core config --dbname={{ item.value.db_name }}
+    --dbuser={{ item.value.db_user }}
+    --dbpass={{ vault_wordpress_sites[item.key].db_pass }}
+    chdir=/var/www/{{ item.key }}/wp
+    creates=/var/www/{{ item.key }}/wp-config.php
+  become: true
+  become_user: "{{ wp_user }}"
+
+- name: Check if wordpress is installed
+  shell: /usr/local/bin/wp core is-installed
+         chdir=/var/www/{{ item.key }}/wp
+  register: wp_installed
+  become: true
+  become_user: "{{ wp_user }}"
+  ignore_errors: true
+
+- block:
+    - name: Install wordpress
+      command: >
+        /usr/local/bin/wp core install
+        --url={{ item.key }}/wp
+        --title={{ item.value.title }}
+        --admin_user={{ item.value.admin_user }}
+        --admin_password={{ vault_wordpress_sites[item.key].admin_pass }}
+        --admin_email={{ item.value.admin_email }}
+        --skip-email
+        chdir=/var/www/{{ item.key }}/wp
+      become: true
+      become_user: "{{ wp_user }}"
+
+    - name: Move wp-config.php
+      command: mv /var/www/{{ item.key }}/wp/wp-config.php /var/www/{{ item.key }}
+
+    - name: Set environment variables
+      lineinfile: dest=/var/www/{{ item.key }}/wp-config.php
+                  insertafter="^<\?php"
+                  line={{ config_line }}
+      with_items:
+        - define( 'WP_CONTENT_URL', 'http://{{ item.key }}/wp-content');
+        - define( 'WP_CONTENT_DIR', dirname(__FILE__) . '/wp-content' );
+        - define( 'UPLOADS', '/media' );
+        - define('DISABLE_WP_CRON', true);
+        - define('WP_CACHE', TRUE);
+        - define('FORCE_SSL_ADMIN', true);
+      loop_control:
+        loop_var: config_line
+
+    - name: Add cron job
+      cron: name="wp-cron for {{ item.key }}" state=present
+            special_time="hourly"
+            job="php -q /var/www/{{ item.key }}/wp/wp-cron.php"
+      become: true
+      become_user: "{{ wp_user }}"
+
+    - name: Add editor user
+      command: |
+        /usr/local/bin/wp user create {{ item.value.editor_user}} {{ item.value.editor_email }}
+        --role=editor --user_pass={{ vault_wordpress_sites[item.key].editor_pass }}
+        chdir=/var/www/{{ item.key }}
+      become: true
+      become_user: "{{ wp_user }}"
+
+    - name: Nuke default content
+      command: /usr/local/bin/wp site empty --yes
+               chdir=/var/www/{{ item.key }}
+      become: true
+      become_user: "{{ wp_user }}"
+
+    - name: Set theme
+      command: /usr/local/bin/wp theme activate {{ item.value.theme }}
+               chdir=/var/www/{{ item.key }}
+      become: true
+      become_user: "{{ wp_user }}"
+
+    - name: Permalink structure
+      command: /usr/local/bin/wp rewrite structure '/%year%/%monthnum%/%day%/%postname%/'
+               chdir=/var/www/{{ item.key }}
+      become: true
+      become_user: "{{ wp_user }}"
+
+    - name: Update home url
+      command: /usr/local/bin/wp option update home http://{{ item.key }}
+               chdir=/var/www/{{ item.key }}
+      become: true
+      become_user: "{{ wp_user }}"
+  when: wp_installed.rc != 0
