@@ -7,6 +7,8 @@ wp_group: nicole
 
 wp_sites:
   www.ohay.org:
+    hosts:
+      - linode.ohay.org
     db_name: ohay_wp
     db_user: ohay_wp_user
 #    db_pass: defined in vault_sites.yml
@@ -17,4 +19,18 @@ wp_sites:
 #    editor_pass: defined in vault_sites.yml
     editor_email: nicole@ohay.org
     title: ohay
+    theme: unite
+  wpdev.lan:
+    hosts:
+      - wpdev
+    db_name: ohay_dev
+    db_user: ohay_dev_user
+#    db_pass: defined in vault_sites.yml
+    admin_user: ghopper
+#    admin_pass: defined in vault_sites.yml
+    admin_email: tty@ohay.org
+    editor_user: nicole
+#    editor_pass: defined in vault_sites.yml
+    editor_email: nicole@ohay.org
+    title: ohay_dev
     theme: unite

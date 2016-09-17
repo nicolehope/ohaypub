@@ -1,14 +1,14 @@
 server {
     listen 80;
     listen 443 ssl;
-    server_name {{ item }};
+    server_name {{ item.key }};
 
-    ssl_certificate /etc/nginx/ssl/{{ item }}.crt;
-    ssl_certificate_key /etc/nginx/ssl/{{ item }}.key;
+    ssl_certificate /etc/nginx/ssl/{{ item.key }}.crt;
+    ssl_certificate_key /etc/nginx/ssl/{{ item.key }}.key;
 
-    root /var/www/{{ item }};
-    access_log /var/log/nginx/{{ item }}/access_log;
-    error_log /var/log/nginx/{{ item }}/error_log;
+    root /var/www/{{ item.key }};
+    access_log /var/log/nginx/{{ item.key }}/access_log;
+    error_log /var/log/nginx/{{ item.key }}/error_log;
 
     etag on;
     expires 7d;

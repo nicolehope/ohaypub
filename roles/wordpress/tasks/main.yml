@@ -7,76 +7,16 @@
            dest=/usr/local/bin/wp mode=0755
   when: wpcli_bin.stat.exists == False
 
-- name: Create log directory
-  file: path=/var/log/nginx/{{ item }} state=directory mode=0750
-        owner=nginx
-  with_items: "{{ wp_sites }}"
-
-- name: Create docroot
-  file: path=/var/www/{{ item }} state=directory mode=0775
-        owner={{ wp_user }} group={{ wp_group }}
-  with_items: "{{ wp_sites }}"
-
-- name: Copy composer file
-  copy: src=composer/{{ item }}.json dest=/var/www/{{ item }}/composer.json
-        owner={{ wp_user }} group={{ wp_group }}
-  with_items: "{{ wp_sites }}"
-
-- name: Composer fetch wordpress
-  command: /usr/local/bin/composer install
-          chdir=/var/www/{{ item }}
-          creates=/var/www/{{ item }}/wp
-  with_items: "{{ wp_sites }}"
-  become: true
-  become_user: "{{ wp_user }}"
-
-- name: Copy index.php
-  command: cp -a /var/www/{{ item }}/wp/index.php /var/www/{{ item }}
-  with_items: "{{ wp_sites }}"
-
-- name: Modify index.php
-  lineinfile: dest=/var/www/{{ item }}/index.php
-              regexp="blog-header.php"
-              line="require( dirname( __FILE__ ) . '/wp/wp-blog-header.php' );"
-  with_items: "{{ wp_sites }}"
-
-- name: WP uploads directory
-  file: path=/var/www/{{ item }}/media state=directory
-        owner=php-fpm group={{ wp_group }} mode=0775
-  with_items: "{{ wp_sites }}"
-
-- name: WP cache directory
-  file: path=/var/www/{{ item }}/cache state=directory
-        owner=php-fpm group={{ wp_group }} mode=0755
-  with_items: "{{ wp_sites }}"
-
-- name: WP cache directory link
-  file: src=/var/www/{{ item }}/cache dest=/var/www/{{ item }}/wp-content/cache state=link
-  with_items: "{{ wp_sites }}"
-
-- name: WP cache php-fpm writable file
-  file: path=/var/www/{{ item }}/wp-content/advanced-cache.php state=touch
-        owner={{ wp_user }} group=php-fpm mode=664
-  with_items: "{{ wp_sites }}"
-
-- include: tasks/selfsign.yml site={{ item }}
-  with_items: "{{ wp_sites }}"
-
-- name: nginx vhost
-  template: src=templates/vhost.j2 dest=/etc/nginx/conf.d/{{ item }}.conf
-  with_items: "{{ wp_sites }}"
-  notify: restart nginx
-
-- name: Create database
-  mysql_db: name={{ item.value.db_name }} state=present
+- include: tasks/selfsign.yml site={{ item.key }}
   with_dict: "{{ wp_sites }}"
+  when: inventory_hostname in item.value.hosts
 
-- name: Create database user
-  mysql_user: name={{ item.value.db_user }}
-              password={{ vault_wordpress_sites[item.key].db_pass }}
-              priv={{ item.value.db_name }}.*:ALL
-              state=present
+- include: tasks/structure.yml
   with_dict: "{{ wp_sites }}"
+  when: inventory_hostname in item.value.hosts
 
 - include: tasks/install.yml
   with_dict: "{{ wp_sites }}"
+  become: true
+  become_user: "{{ wp_user }}"
+  when: inventory_hostname in item.value.hosts

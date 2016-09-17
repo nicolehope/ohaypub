@@ -1,0 +1,49 @@
+- name: Create log directory
+  file: path=/var/log/nginx/{{ item.key }} state=directory mode=0750
+        owner=nginx
+
+- name: Create docroot
+  file: path=/var/www/{{ item.key }} state=directory mode=0775
+        owner={{ wp_user }} group={{ wp_group }}
+
+- name: Copy composer file
+  copy: src=composer/{{ item.key }}.json dest=/var/www/{{ item.key }}/composer.json
+        owner={{ wp_user }} group={{ wp_group }}
+
+- name: wp directory
+  file: path=/var/www/{{ item.key }}/wp state=directory
+        owner={{ wp_user }} group={{ wp_group }} mode=0775
+
+- name: wp-content directory
+  file: path=/var/www/{{ item.key }}/wp-content state=directory
+        owner={{ wp_user }} group={{ wp_group }} mode=0775
+
+- name: WP uploads directory
+  file: path=/var/www/{{ item.key }}/media state=directory
+        owner=php-fpm group={{ wp_group }} mode=0775
+
+- name: WP cache directory
+  file: path=/var/www/{{ item.key }}/cache state=directory
+        owner=php-fpm group={{ wp_group }} mode=0755
+
+- name: WP cache directory link
+  file: src=/var/www/{{ item.key }}/cache dest=/var/www/{{ item.key }}/wp-content/cache state=link
+
+- name: WP cache php-fpm writable file
+  file: path=/var/www/{{ item.key }}/wp-content/advanced-cache.php state=touch
+        owner={{ wp_user }} group=php-fpm mode=664
+
+#- include: tasks/selfsign.yml site={{ item.key }}
+
+- name: nginx vhost
+  template: src=templates/vhost.j2 dest=/etc/nginx/conf.d/{{ item.key }}.conf
+  notify: restart nginx
+
+- name: Create database
+  mysql_db: name={{ item.value.db_name }} state=present
+
+- name: Create database user
+  mysql_user: name={{ item.value.db_user }}
+              password={{ vault_wordpress_sites[item.key].db_pass }}
+              priv={{ item.value.db_name }}.*:ALL
+              state=present
