@@ -1,14 +1,16 @@
-- hosts: all
+- hosts: wordpress
   become: true
   become_user: "{{ wp_user }}"
 
   tasks:
     - name: Update composer.json
-      copy: src=composer/{{ item }}.json dest=/var/www/{{ item }}/composer.json
+      copy: src=composer/{{ item.key }}.json dest=/var/www/{{ item.key }}/composer.json
             owner={{ wp_user }} group={{ wp_group }}
-      with_items: "{{ wp_sites }}"
+      with_dict: "{{ wp_sites }}"
+      when: inventory_hostname in item.value.hosts
 
     - name: Composer update
       command: /usr/local/bin/composer update
-               chdir=/var/www/{{ item }}
-      with_items: "{{ wp_sites }}"
+               chdir=/var/www/{{ item.key }}
+      with_dict: "{{ wp_sites }}"
+      when: inventory_hostname in item.value.hosts

@@ -1,5 +1,8 @@
 redirect_sites:
-  ohay.org: www.ohay.org
+  ohay.org:
+    hosts:
+      - linode.ohay.org
+    redirect: www.ohay.org
 
 
 wp_user: nicole
