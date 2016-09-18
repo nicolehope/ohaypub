@@ -14,6 +14,13 @@ server {
     expires 7d;
     if_modified_since before;
 
+    gzip on;
+    gzip_vary on;
+    gzip_types text/plain text/xml image/svg+xml
+      application/rss+xml application/atom+xml application/xhtml+xml
+      text/css application/json application/x-javascript
+      application/font-otf application/font-ttf;
+
     location = /favicon.ico {
         log_not_found off;
         access_log off;
