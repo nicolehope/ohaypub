@@ -1,2 +1,4 @@
 percona_version: 56
-php_version: 56u
+php_version:
+  linode.ohay.org: 56u
+  wpdev: 56u

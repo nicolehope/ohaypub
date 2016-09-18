@@ -10,11 +10,12 @@
 - name: Install PHP
   yum: name={{ item }} state=present
   with_items:
-    - php{{ php_version }}-fpm
-    - php{{ php_version }}-cli
-    - php{{ php_version }}-mysqlnd
-    - php{{ php_version }}-pecl-apcu
-    - php{{ php_version }}-mbstring
+    - php{{ php_version[inventory_hostname] }}-fpm
+    - php{{ php_version[inventory_hostname] }}-cli
+    - php{{ php_version[inventory_hostname] }}-mysqlnd
+    - php{{ php_version[inventory_hostname] }}-pecl-apcu
+    - php{{ php_version[inventory_hostname] }}-mbstring
+  when: inventory_hostname in php_version
 
 #TODO: php-fpm pool configuration
 
