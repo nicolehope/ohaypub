@@ -1,0 +1,8 @@
+[DEFAULT]
+bantime = 3600
+action = firewallcmd-ipset
+
+ignoreip = 127.0.0.1/8
+
+[sshd]
+enabled = true

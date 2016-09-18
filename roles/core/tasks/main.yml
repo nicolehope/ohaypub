@@ -11,6 +11,8 @@
     - ansible
     - git
     - pwgen
+    - fail2ban
+    - fail2ban-systemd
 
 - name: Disable root SSH logins
   lineinfile: dest=/etc/ssh/sshd_config state=present
@@ -18,9 +20,13 @@
               line="PermitRootLogin no"
   notify: restart sshd
 
+- name: fail2ban jail.local
+  copy: src=files/jail.local dest=/etc/fail2ban/jail.local
+  notify: restart fail2ban
 
 - name: Enable services
   service: name={{ item }} state=started enabled=yes
   with_items:
     - firewalld
     - sshd
+    - fail2ban
