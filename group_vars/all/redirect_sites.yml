@@ -1,0 +1,5 @@
+redirect_sites:
+  ohay.org:
+    hosts:
+      - linode.ohay.org
+    redirect: www.ohay.org
