@@ -4,6 +4,8 @@
 - name: Standard packages
   yum: name={{ item }} state=present
   with_items:
+    - net-tools
+    - whois
     - wget
     - rsync
     - openssh-clients
