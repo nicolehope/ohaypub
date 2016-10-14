@@ -1,4 +1,6 @@
-percona_version: 56
+percona_version:
+  linode.ohay.org: 56
+  wpdev: 56
 php_version:
   linode.ohay.org: 56u
   wpdev: 56u

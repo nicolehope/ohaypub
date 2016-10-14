@@ -48,7 +48,7 @@
       with_items:
         - define( 'WP_CONTENT_URL', 'http://{{ item.key }}/wp-content');
         - define( 'WP_CONTENT_DIR', dirname(__FILE__) . '/wp-content' );
-        - define( 'UPLOADS', '/media' );
+        - define( 'UPLOADS', 'media' );
         - define('DISABLE_WP_CRON', true);
         - define('WP_CACHE', TRUE);
         - define('FORCE_SSL_ADMIN', true);

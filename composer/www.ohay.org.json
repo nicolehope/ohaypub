@@ -15,7 +15,8 @@
     "wpackagist-plugin/jetpack": "*",
     "wpackagist-plugin/jetpack-module-control": "*",
     "wpackagist-plugin/ninja-page-categories-and-tags": "*",
-    "wpackagist-plugin/google-sitemap-generator": "*"
+    "wpackagist-plugin/google-sitemap-generator": "*",
+    "wpackagist-plugin/ultimate-category-excluder": "*"
   },
   "extra": {
     "wordpress-install-dir": "wp"

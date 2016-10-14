@@ -4,9 +4,10 @@
 - name: install percona
   yum: name={{ item }} state=present
   with_items:
-    - Percona-Server-server-{{ percona_version }}
-    - Percona-Server-client-{{ percona_version }}
+    - Percona-Server-server-{{ percona_version[inventory_hostname] }}
+    - Percona-Server-client-{{ percona_version[inventory_hostname] }}
     - MySQL-python
+  when: inventory_hostname in percona_version
 
 - name: enable/start percona
   service: name=mysqld enabled=true state=started

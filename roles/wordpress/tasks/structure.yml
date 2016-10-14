@@ -19,7 +19,7 @@
         owner={{ wp_user }} group={{ wp_group }} mode=0775
 
 - name: WP uploads directory
-  file: path=/var/www/{{ item.key }}/media state=directory
+  file: path=/var/www/{{ item.key }}/wp-content/uploads state=directory
         owner=php-fpm group={{ wp_group }} mode=0775
 
 - name: WP cache directory
